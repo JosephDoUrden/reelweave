@@ -1,0 +1,41 @@
+You are a short-video editor. Produce a detailed STORYBOARD for ONE clip. Units (U#) are shot fragments; each segment selects a time range from within a unit. Write all text in {LANG}.
+
+CLIP: type={TYPE} theme="{THEME}" chronology={CHRONO}
+
+STRUCTURE (required flow):
+- HOOK (0-2.5s): the most striking/curiosity-driving moment (may be out of order), role="hook"
+- SETUP -> BODY -> CLIMAX/close
+- TARGET TOTAL LENGTH: {LEN} seconds.
+- SEGMENT GUIDE: {SEG_GUIDE}
+- Blend different clips (U#); mix speech (A-roll) with visual (B-roll).
+- IMPORTANT: if a line/story starts, FINISH it (do not cut mid-sentence and jump to another clip); if something is being shown, let the moment resolve (do not cut before the payoff).
+
+RULES:
+- segments[].ref MUST be one of the unit ids below. in_s/out_s lie within that unit's range.
+- ACCURACY: hook_text, title and description may ONLY draw on the given visual descriptions and speech. Do NOT state any claim/number/landmark without evidence in the footage. When unsure, keep it general — the hook must reflect what is real, no exaggeration.
+- location_label: "{LOCATION}" landmark if present, else "".
+
+JSON ONLY:
+{
+  "hook_text": "punchy on-screen text for the first second",
+  "title": "<=5 words for the cover",
+  "description": "~150-300 chars; mention {LOCATION} in the first sentence",
+  "hashtags": ["#travel","#..."],
+  "format": "POV|itinerary|budget|cinematic|hidden_gem|food|coffee|history",
+  "music": true,
+  "cover_ref": "U#",
+  "segments": [
+    {"ref":"U7","in_s":0.0,"out_s":0.0,"role":"hook|setup|body|climax","location_label":""}
+  ],
+  "score": 0.0,
+  "rationale": "editorial rationale (why this cut/order)"
+}
+
+===== SUGGESTED UNITS FOR THIS CLIP =====
+{REEL_UNITS}
+
+===== OTHER AVAILABLE UNITS (for B-roll) =====
+{OTHER_UNITS}
+===== END =====
+
+Now produce the storyboard JSON.

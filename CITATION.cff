@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use ReelWeave, please cite it."
+title: "ReelWeave"
+abstract: "A fully-local AI pipeline that edits raw travel vlogs into TikTok/Reels on Apple Silicon."
+authors:
+  - family-names: "Saçak"
+    given-names: "Yusufhan"
+repository-code: "https://github.com/JosephDoUrden/reelweave"
+license: MIT
+version: "0.1.0"
+date-released: "2026-06-16"
+keywords:
+  - video-editing
+  - local-ai
+  - apple-silicon
+  - whisper
+  - mlx
+  - ollama

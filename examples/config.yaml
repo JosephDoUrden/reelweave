@@ -1,0 +1,31 @@
+# Example localisation — a Turkish-narrated trip to Sarajevo.
+# Start from the repo-root config.yaml and override the keys below for your own trip.
+
+language: "tr"
+location: "Sarajevo"
+
+paths:
+  source_dir: "./footage"
+  source_glob: "DJI_*.MP4"
+  exclude: []               # e.g. ["DJI_..._0001_D"]  # accidental recordings
+
+transcribe:
+  language: "tr"
+  # Vocabulary hint for proper nouns (also create prompts/initial_prompt.txt with these).
+  name_fixes: {"wrongname": "Bartuğ"}   # deterministic mis-hearing fixes
+
+# Activity supercuts with localised lexicons.
+parts:
+  compilations:
+    - title: "Tasting Local Beers"
+      lexicon: ["bira", "pivo", "pub", "fıçı", "tadım", "cheers"]
+      activity: "drinking_beer"
+      hashtag: "#beer"
+    - title: "Street Food"
+      lexicon: ["yemek", "ekmek", "et", "burek", "ćevapi", "lezzet"]
+      activity: "eating_food"
+      hashtag: "#food"
+    - title: "Coffee Break"
+      lexicon: ["kahve", "fincan", "telve"]
+      activity: "drinking_coffee"
+      hashtag: "#coffee"

@@ -1,0 +1,28 @@
+name: Bug report
+description: Something isn't working
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: cmd
+    attributes:
+      label: Command
+      placeholder: reelweave run --from select
+  - type: input
+    id: env
+    attributes:
+      label: Environment
+      placeholder: "macOS 26, M3 Pro, 36GB; ffmpeg 8.x (libass); ollama 0.x"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      render: shell

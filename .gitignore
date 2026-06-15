@@ -1,0 +1,42 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+.ruff_cache/
+.pytest_cache/
+
+# uv
+# (uv.lock IS committed)
+
+# Models & weights (downloaded via scripts/download_models.py)
+models/
+*.safetensors
+*.gguf
+*.rnnn
+*.bin
+
+# Pipeline working data & outputs (never commit footage/renders)
+output/
+work/
+*.mp4
+*.mov
+*.MP4
+*.MOV
+*.wav
+*.mp3
+*.m4a
+
+# Third-party vendored repos (cloned by setup)
+vendor/
+
+# Local config overrides & user media
+music/
+footage/
+*.local.yaml
+
+# macOS
+.DS_Store

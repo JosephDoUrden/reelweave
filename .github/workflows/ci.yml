@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: macos-14   # Apple Silicon
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+      - name: Set up Python
+        run: uv python install 3.12
+      - name: Lint (ruff)
+        run: |
+          uvx ruff check .
+          uvx ruff format --check .
+      - name: Import check
+        run: |
+          uv venv
+          uv pip install pyyaml requests
+          uv run python -c "import ast,glob; [ast.parse(open(f).read()) for f in glob.glob('reelweave/*.py')]"

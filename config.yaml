@@ -1,0 +1,152 @@
+# ReelWeave configuration. Numbers follow 2026 TikTok/Reels best practice.
+# Copy this file, point `paths.source_dir` at your footage and adjust `language`/`location`.
+
+language: "en"              # output/subtitle language (e.g. "en", "tr")
+location: ""                # trip location used in titles/prompts (e.g. "Sarajevo")
+
+paths:
+  source_dir: "./footage"   # folder of raw clips (relative to this config file)
+  work_dir: "./output/work"
+  clips_dir: "./output/clips"
+  index_html: "./output/index.html"
+  source_glob: "*.MP4"      # e.g. "DJI_*.MP4" or "*.mov"
+  exclude: []               # file ids/stems to skip (e.g. accidental recordings)
+
+output_mode: "parts"        # "parts" = long-form, part-based trip series | "reels" = short clips
+
+parts:
+  axis: "day"               # split first by capture day
+  target_min_s: 60          # long-form parts: ~60-180s
+  target_max_s: 180
+  min_chapter_s: 10
+  boundary_gap_min: 18      # a >18 min gap between clips starts a new chapter
+  max_part_s: 200
+  # Activity supercuts (time-independent). Each: title, lexicon, optional activity tag, hashtag.
+  compilations:
+    - title: "Street Food Tour"
+      lexicon: ["food", "eat", "restaurant", "dish", "meal", "street food", "tasty", "bite"]
+      activity: "eating_food"
+      hashtag: "#food"
+    - title: "Tasting Local Beers"
+      lexicon: ["beer", "pub", "brewery", "pint", "lager", "tasting", "cheers", "ale"]
+      activity: "drinking_beer"
+      hashtag: "#beer"
+    - title: "Coffee Break"
+      lexicon: ["coffee", "cafe", "espresso", "latte", "cappuccino"]
+      activity: "drinking_coffee"
+      hashtag: "#coffee"
+
+clip:
+  target_count: 8           # used in "reels" mode
+  max_count: 12
+  min_score: 5.5
+  min_seg_s: 3.5            # a segment cannot be shorter than this (let the beat complete)
+  merge_contiguous: true   # contiguous windows of the same clip merge into one seamless segment
+  lengths:                 # target length per clip type ("reels" mode)
+    HERO:     {min: 45, max: 90}
+    PLACE:    {min: 25, max: 50}
+    SUPERCUT: {min: 20, max: 42}
+    THEME:    {min: 25, max: 50}
+    default:  {min: 20, max: 45}
+
+video:
+  w: 1080
+  h: 1920
+  fps: 30
+  vcodec: "h264_videotoolbox"   # Apple VideoToolbox hardware encoder
+  bitrate: "8M"
+  pix_fmt: "yuv420p"
+
+audio:
+  acodec: "aac"
+  rate: 48000
+  kbps: 256
+  lufs: -16.0              # speech-led, music-free; consistent level across parts
+  true_peak: -1.0
+  lra: 11
+
+# Safe zone (1080x1920) — captions sit inside this box (lower-centre).
+safezone_px: {top: 140, bottom: 420, left: 60, right: 120}
+
+captions:
+  font: "Montserrat ExtraBold"
+  font_size: 62
+  max_words_per_line: 4
+  max_lines: 2
+  outline: 6
+  shadow: 3
+  primary_color: "FFFFFF"   # word before it is spoken (white)
+  highlight_color: "FFD60A" # spoken word / karaoke sweep (yellow)
+  margin_v: 430
+
+hook:
+  first_text_by_s: 0.5
+  min_text_hold_s: 2.0
+
+transcribe:
+  model_repo: "mlx-community/whisper-large-v3-mlx"
+  language: "tr"            # spoken language ("" for auto-detect)
+  word_timestamps: true
+  hallucinations: []        # extra phrases to drop (silence/ambience artefacts)
+  name_fixes: {}            # deterministic proper-noun corrections, e.g. {"wrongname": "RightName"}
+
+scenes:
+  detector: "adaptive"      # tolerant of handheld camera motion
+  min_scene_len_s: 1.0
+  downscale: 2
+
+score:
+  frames_per_shot: 3
+  blur_floor: 80.0          # Laplacian variance; below this is considered blurry
+
+vision:                     # deep understanding (native video, sub-window + structured JSON)
+  engine: "mlx"             # "mlx" = MLX Qwen3-VL native video | "ollama" = frame-grid fallback
+  mlx_model: "mlx-community/Qwen3-VL-8B-Instruct-4bit"
+  fps: 2.0                  # frames/sec sampled from each window
+  model: "qwen2.5vl:7b"     # ollama fallback model
+  grid: 12
+  grid_cols: 4
+  window_max_s: 13          # split long shots into ~13s windows (deep understanding)
+  window_min_s: 5
+  max_windows_per_file: 40
+  min_quality: 2.0
+  temperature: 0.1
+
+ollama:
+  host: "http://localhost:11434"
+  model: "qwen3:32b"        # the director LLM
+  temperature: 0.4
+  num_ctx: 32768
+  timeout_s: 1200
+
+effects:
+  ken_burns: true           # smooth slow push-in per segment
+  kb_zoom: 1.08
+  color_grade: true         # subtle teal-orange + contrast (curves)
+  lut: ""                   # optional .cube path; falls back to curves if empty
+  film_grain: true
+  grain_strength: 10
+  transitions: true         # xfade transitions between SUPERCUT segments (+ whoosh)
+  transition_dur_s: 0.28
+  caption_word_pop: true
+  title_card: false         # on-screen hook/title card
+  location_card: false      # on-screen location pill
+  chapter_card: false       # full-screen chapter card
+
+audio_fx:
+  denoise: true
+  denoise_model: "models/sh.rnnn"   # arnndn model if present; else afftdn
+  denoise_nr: 11
+  sidechain_duck: true      # duck music under speech (when music is enabled)
+
+music:                      # OPTIONAL background music (off by default)
+  dir: "music"              # drop .mp3/.m4a here (use music/<mood>/ for per-mood selection)
+  volume_db: -16
+  enabled: false            # original/ambient audio only
+
+sfx:                        # transition sound effects (synthesised by scripts/generate_sfx.py)
+  dir: "sfx"
+  enabled: true
+  whoosh_db: -8
+  impact_db: -5
+  whoosh_lead_s: 0.12

@@ -1,0 +1,32 @@
+You are an award-winning travel-vlog editor. Below are ALL shots from a trip to {LOCATION}, in chronological order, each with a visual analysis and any speech. First UNDERSTAND the whole trip, then plan a set of share-worthy short clips. Write all text in {LANG}.
+
+TASK:
+1. Understand the trip: timeline (day -> place -> event), standout moments, narrative themes.
+2. Plan up to {N} focused clips (do not dilute quality). Mix:
+   - HERO: a trip recap (macro-chronological) and/or a single-day "day in the life".
+   - PLACE: clips built around strong locations.
+   - SUPERCUT: gather a RECURRING activity across the whole trip (e.g. tasting drinks, street food, coffee). Combine the same theme from multiple clips.
+   - THEME: "X things", "nobody tells you", budget, etc.
+   Prefer at least 1-2 SUPERCUTs (high viral potential).
+3. For each clip, roughly pick which units (U#) to use and set a chronology rule.
+   SUPERCUT uses chrono_rule="free".
+
+chrono_rule values:
+- "macro_chronological": segments follow trip time (recap / day-in-life)
+- "location_internal": single place, internally chronological
+- "free": theme-based, order flexible (speech segments must still be time-consistent)
+
+JSON ONLY:
+{
+  "trip_summary": "2-3 sentences",
+  "reels": [
+    {"type":"HERO|PLACE|SUPERCUT|THEME","theme":"...","title_idea":"...",
+     "unit_ids":["U3","U7","U12"],"chrono_rule":"macro_chronological","why":"why it is strong"}
+  ]
+}
+
+===== UNIT LIST (chronological) =====
+{UNITS}
+===== END =====
+
+Now produce the {N}-clip plan as JSON.

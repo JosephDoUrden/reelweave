@@ -1,0 +1,23 @@
+This is a short VIDEO window from a travel vlog. Understand the MOTION, ACTIVITY and PLACE as a whole — not a single frame, but WHAT IS HAPPENING.
+
+Only name a landmark if you actually see it; otherwise use null. Never invent anything — report only what is visible. If you see a sign, read it.
+
+activity must be one or more of: ["walking_exploring","landmark_visit","eating_food","drinking_beer","beer_tasting","drinking_coffee","shopping","scenic_view","talking_to_camera","market_bazaar","religious_site","river_bridge","cafe_resting","other"]
+
+Return ONLY this JSON object:
+{
+  "place_type": "street|market|restaurant|cafe|mosque|museum|river|fortress|panorama|vehicle|hotel|nature|other",
+  "landmark": "recognised landmark name or null",
+  "landmark_confidence": 0.0,
+  "activity": ["..."],
+  "objects": ["main visible objects"],
+  "food_drink": ["visible food/drinks (beer, coffee, bread...) or empty"],
+  "action": "what is happening (short)",
+  "mood": "lively|peaceful|crowded|cinematic|fun|nostalgic",
+  "ocr_text": "any on-screen sign/text, or null",
+  "time_of_day": "morning|midday|evening|night|unknown",
+  "highlight_worthiness": 0.0,
+  "clip_purpose": "one sentence: what this window is about",
+  "caption": "one short sentence describing it, written in {LANG}"
+}
+highlight_worthiness is 0.0-1.0: how worth using this moment is in a travel video.
