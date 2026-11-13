@@ -1,4 +1,5 @@
 """Stage 1 — probe: scan source videos and build a rotation-corrected manifest."""
+
 from __future__ import annotations
 
 import json
@@ -29,8 +30,9 @@ def _capture_time(name: str, meta: dict) -> str | None:
     return None
 
 
-def build_manifest(source_dir: Path, glob: str, work_dir: Path,
-                   exclude: list[str] | None = None) -> dict:
+def build_manifest(
+    source_dir: Path, glob: str, work_dir: Path, exclude: list[str] | None = None
+) -> dict:
     work_dir.mkdir(parents=True, exist_ok=True)
     excl = set(exclude or [])
     files = sorted(source_dir.glob(glob))
@@ -49,17 +51,19 @@ def build_manifest(source_dir: Path, glob: str, work_dir: Path,
             continue
         w, h = ff.display_dimensions(vs)
         dur = float(meta.get("format", {}).get("duration", 0.0))
-        entries.append({
-            "id": f.stem,
-            "path": str(f.resolve()),
-            "name": f.name,
-            "capture_time": _capture_time(f.name, meta),
-            "duration_s": round(dur, 3),
-            "disp_w": w,
-            "disp_h": h,
-            "fps": round(ff.fps_of(vs), 3),
-            "is_vertical": h >= w,
-        })
+        entries.append(
+            {
+                "id": f.stem,
+                "path": str(f.resolve()),
+                "name": f.name,
+                "capture_time": _capture_time(f.name, meta),
+                "duration_s": round(dur, 3),
+                "disp_w": w,
+                "disp_h": h,
+                "fps": round(ff.fps_of(vs), 3),
+                "is_vertical": h >= w,
+            }
+        )
     entries.sort(key=lambda e: (e["capture_time"] or "", e["name"]))
     manifest = {
         "source_dir": str(source_dir.resolve()),
@@ -69,8 +73,10 @@ def build_manifest(source_dir: Path, glob: str, work_dir: Path,
     }
     out = work_dir / "manifest.json"
     out.write_text(json.dumps(manifest, ensure_ascii=False, indent=2))
-    print(f"  manifest: {len(entries)} files, "
-          f"{manifest['total_duration_s']/60:.1f} min total -> {out}")
+    print(
+        f"  manifest: {len(entries)} files, "
+        f"{manifest['total_duration_s'] / 60:.1f} min total -> {out}"
+    )
     return manifest
 
 

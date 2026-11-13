@@ -1,4 +1,5 @@
 """Stage 8 — package: write caption.txt, meta.json and the review dashboard (index.html)."""
+
 from __future__ import annotations
 
 import html
@@ -11,7 +12,7 @@ _MUSIC_CREDIT = {
     "bff_the_great": '🎵 "The Great" — Broke For Free (CC BY 3.0)',
     "bff_night_owl": '🎵 "Night Owl" — Broke For Free (CC BY 3.0)',
     "komiku_battle": '🎵 Komiku — "Battle Theme" (CC0, public domain)',
-    "happy_pop": '🎵 Royalty-free music (Pixabay)',
+    "happy_pop": "🎵 Royalty-free music (Pixabay)",
 }
 
 
@@ -32,7 +33,8 @@ def package_clip(clip: dict) -> None:
     (out_dir / "caption.txt").write_text(_caption_text(clip), encoding="utf-8")
     meta = {k: v for k, v in clip.items() if not k.startswith("_")}
     (out_dir / "meta.json").write_text(
-        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8")
+        json.dumps(meta, ensure_ascii=False, indent=2), encoding="utf-8"
+    )
 
 
 def _rel(path: str | None, base: Path) -> str:
@@ -57,15 +59,15 @@ def build_index(clips: list[dict], index_html: Path) -> None:
     <div class="card">
       <video controls preload="none" poster="{html.escape(cover)}" src="{html.escape(mp4)}"></video>
       <div class="meta">
-        <div class="row"><span class="badge">{c['index']:02d}</span>
-          <span class="fmt">{html.escape(c.get('format',''))}</span>
-          <span class="score">★ {c.get('score','')}</span>
-          <span class="dur">{c.get('duration',0):.0f}s</span></div>
-        <h3>{html.escape(c.get('theme') or c.get('title',''))}</h3>
-        <p class="hook">🪝 {html.escape(c.get('hook_text',''))}</p>
-        <p class="why">{html.escape(c.get('rationale',''))}</p>
+        <div class="row"><span class="badge">{c["index"]:02d}</span>
+          <span class="fmt">{html.escape(c.get("format", ""))}</span>
+          <span class="score">★ {c.get("score", "")}</span>
+          <span class="dur">{c.get("duration", 0):.0f}s</span></div>
+        <h3>{html.escape(c.get("theme") or c.get("title", ""))}</h3>
+        <p class="hook">🪝 {html.escape(c.get("hook_text", ""))}</p>
+        <p class="why">{html.escape(c.get("rationale", ""))}</p>
         <textarea readonly rows="4">{cap}\n\n{html.escape(tags)}</textarea>
-        <p class="src">🎬 {len(c.get('segments',[]))} cuts · {c.get('n_sources',1)} source clips{music}</p>
+        <p class="src">🎬 {len(c.get("segments", []))} cuts · {c.get("n_sources", 1)} source clips{music}</p>
       </div>
     </div>""")
 
@@ -92,7 +94,7 @@ def build_index(clips: list[dict], index_html: Path) -> None:
 </style></head><body>
 <h1>🎬 ReelWeave</h1>
 <div class="sub">{len(clips)} clips · share-ready · subtitles + caption + hashtags + cover included</div>
-<div class="grid">{''.join(cards)}</div>
+<div class="grid">{"".join(cards)}</div>
 </body></html>"""
     index_html.parent.mkdir(parents=True, exist_ok=True)
     index_html.write_text(doc, encoding="utf-8")

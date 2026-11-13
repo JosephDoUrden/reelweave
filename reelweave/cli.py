@@ -10,11 +10,11 @@ Usage:
 
 Stages: probe -> transcribe -> scenes -> score -> describe -> select -> render -> package
 """
+
 from __future__ import annotations
 
 import argparse
 import subprocess
-import sys
 import time
 from pathlib import Path
 
@@ -84,7 +84,7 @@ def cmd_run(args) -> int:
     if args.stage:
         run_stages = [args.stage]
     elif args.from_stage:
-        run_stages = STAGES[STAGES.index(args.from_stage):]
+        run_stages = STAGES[STAGES.index(args.from_stage) :]
     else:
         run_stages = STAGES
 
@@ -94,14 +94,17 @@ def cmd_run(args) -> int:
 
     if "probe" in run_stages or not (work / "manifest.json").exists():
         print("\n[1/8] probe")
-        manifest = probe_mod.build_manifest(paths["source_dir"],
-                                            cfg["paths"]["source_glob"], work,
-                                            exclude=cfg["paths"].get("exclude"))
+        manifest = probe_mod.build_manifest(
+            paths["source_dir"],
+            cfg["paths"]["source_glob"],
+            work,
+            exclude=cfg["paths"].get("exclude"),
+        )
     else:
         manifest = probe_mod.load_manifest(work)
 
     if args.limit > 0:
-        manifest["files"] = manifest["files"][:args.limit]
+        manifest["files"] = manifest["files"][: args.limit]
         print(f"  (--limit {args.limit}: {len(manifest['files'])} files)")
 
     if "transcribe" in run_stages:
@@ -117,15 +120,17 @@ def cmd_run(args) -> int:
     if "score" in run_stages:
         print("\n[4/8] score (visual quality)")
         if not scenes_by_id:
-            scenes_by_id = {e["id"]: scenes_mod.load_scenes(e["id"], work)
-                            for e in manifest["files"]}
+            scenes_by_id = {
+                e["id"]: scenes_mod.load_scenes(e["id"], work) for e in manifest["files"]
+            }
         scores_by_id = score_mod.score_all(manifest, scenes_by_id, work, cfg)
 
     if "describe" in run_stages:
         print("\n[5/8] describe (vision understanding)")
         if not scores_by_id:
-            scores_by_id = {e["id"]: score_mod.load_scores(e["id"], work)
-                            for e in manifest["files"]}
+            scores_by_id = {
+                e["id"]: score_mod.load_scores(e["id"], work) for e in manifest["files"]
+            }
         desc_mod.describe_all(manifest, scores_by_id, work, cfg)
 
     selection = []
@@ -144,11 +149,14 @@ def cmd_run(args) -> int:
 
     if "package" in run_stages:
         print("\n[8/8] package (caption + meta + dashboard)")
-        done = selection if (selection and selection[0].get("_out_dir")) \
+        done = (
+            selection
+            if (selection and selection[0].get("_out_dir"))
             else _collect_rendered(selection, paths["clips_dir"])
+        )
         pkg_mod.package_all(done, paths["index_html"])
 
-    print(f"\n✅ Done ({time.time()-t0:.0f}s). Output: {paths['clips_dir']}")
+    print(f"\n✅ Done ({time.time() - t0:.0f}s). Output: {paths['clips_dir']}")
     if paths["index_html"].exists():
         print(f"   Review dashboard: open '{paths['index_html']}'")
     return 0
@@ -166,7 +174,7 @@ def cmd_setup(args) -> int:
             subprocess.run(["ollama", "pull", m], check=True)
         except Exception as e:
             print(f"  ! could not pull {m}: {e} (is Ollama installed and running?)")
-    print(f"\nMLX vision model '{cfg['vision'].get('mlx_model','')}' will download on first run.")
+    print(f"\nMLX vision model '{cfg['vision'].get('mlx_model', '')}' will download on first run.")
     print("ffmpeg:", ff.find_ffmpeg(), "(libass:", "yes)" if ff.ffmpeg_has_libass() else "NO ⚠️)")
     return 0
 

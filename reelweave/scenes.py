@@ -1,4 +1,5 @@
 """Stage 3 — scenes: detect shot boundaries with PySceneDetect."""
+
 from __future__ import annotations
 
 import json
@@ -16,9 +17,11 @@ def detect_file(entry: dict, work_dir: Path, cfg: dict) -> list[dict]:
 
     fps = entry.get("fps") or 30.0
     min_len_frames = max(1, int(cfg["scenes"].get("min_scene_len_s", 1.0) * fps))
-    det = (AdaptiveDetector(min_scene_len=min_len_frames)
-           if cfg["scenes"].get("detector", "adaptive") == "adaptive"
-           else ContentDetector(min_scene_len=min_len_frames))
+    det = (
+        AdaptiveDetector(min_scene_len=min_len_frames)
+        if cfg["scenes"].get("detector", "adaptive") == "adaptive"
+        else ContentDetector(min_scene_len=min_len_frames)
+    )
 
     print(f"  scenes: {entry['name']} ...", flush=True)
     try:
@@ -31,11 +34,9 @@ def detect_file(entry: dict, work_dir: Path, cfg: dict) -> list[dict]:
     if scene_list:
         for start_tc, end_tc in scene_list:
             s, e = start_tc.get_seconds(), end_tc.get_seconds()
-            shots.append({"start": round(s, 3), "end": round(e, 3),
-                          "dur": round(e - s, 3)})
+            shots.append({"start": round(s, 3), "end": round(e, 3), "dur": round(e - s, 3)})
     else:
-        shots.append({"start": 0.0, "end": entry["duration_s"],
-                      "dur": entry["duration_s"]})
+        shots.append({"start": 0.0, "end": entry["duration_s"], "dur": entry["duration_s"]})
 
     out.write_text(json.dumps(shots, ensure_ascii=False, indent=2))
     return shots

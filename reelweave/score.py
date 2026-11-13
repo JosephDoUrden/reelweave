@@ -1,4 +1,5 @@
 """Stage 4 — score: sample shot frames and rate visual quality via blur/brightness."""
+
 from __future__ import annotations
 
 import json
@@ -18,6 +19,7 @@ def _sample_times(shot: dict, n: int) -> list[float]:
 
 def _frame_metrics(jpg: Path):
     import cv2
+
     img = cv2.imread(str(jpg))
     if img is None:
         return None
@@ -26,8 +28,8 @@ def _frame_metrics(jpg: Path):
         scale = 480.0 / w
         img = cv2.resize(img, (480, int(h * scale)))
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    blur = float(cv2.Laplacian(gray, cv2.CV_64F).var())   # higher = sharper
-    brightness = float(gray.mean())                        # 0-255
+    blur = float(cv2.Laplacian(gray, cv2.CV_64F).var())  # higher = sharper
+    brightness = float(gray.mean())  # 0-255
     return blur, brightness
 
 
@@ -56,25 +58,28 @@ def score_file(entry: dict, shots: list[dict], work_dir: Path, cfg: dict) -> lis
             if blurs:
                 avg_blur = sum(blurs) / len(blurs)
                 avg_bright = sum(brights) / len(brights)
-                sharp = min(1.0, avg_blur / (blur_floor * 3))      # 0-1
+                sharp = min(1.0, avg_blur / (blur_floor * 3))  # 0-1
                 # Good exposure: close to 1 within the ~60-200 band.
                 expo = 1.0 - min(1.0, abs(avg_bright - 125) / 125)
                 q = round(10.0 * (0.7 * sharp + 0.3 * expo), 2)
             else:
                 avg_blur = avg_bright = 0.0
                 q = 0.0
-            scored.append({**shot,
-                           "blur": round(avg_blur, 1),
-                           "brightness": round(avg_bright, 1),
-                           "sharp_ok": avg_blur >= blur_floor,
-                           "quality": q})
+            scored.append(
+                {
+                    **shot,
+                    "blur": round(avg_blur, 1),
+                    "brightness": round(avg_bright, 1),
+                    "sharp_ok": avg_blur >= blur_floor,
+                    "quality": q,
+                }
+            )
     out.write_text(json.dumps(scored, ensure_ascii=False, indent=2))
     return scored
 
 
 def score_all(manifest, scenes_by_id, work_dir, cfg) -> dict[str, list[dict]]:
-    return {e["id"]: score_file(e, scenes_by_id[e["id"]], work_dir, cfg)
-            for e in manifest["files"]}
+    return {e["id"]: score_file(e, scenes_by_id[e["id"]], work_dir, cfg) for e in manifest["files"]}
 
 
 def load_scores(fid: str, work_dir: Path) -> list[dict]:
