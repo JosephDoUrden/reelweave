@@ -1,6 +1,8 @@
 """ffmpeg/ffprobe helpers — auto-detects an ffmpeg build that has libass."""
+
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import shutil
@@ -14,7 +16,9 @@ def _brew_prefix(formula: str) -> str | None:
     try:
         out = subprocess.run(
             ["brew", "--prefix", formula],
-            capture_output=True, text=True, timeout=20,
+            capture_output=True,
+            text=True,
+            timeout=20,
         )
         if out.returncode == 0:
             p = out.stdout.strip()
@@ -27,8 +31,9 @@ def _brew_prefix(formula: str) -> str | None:
 def _has_ass_filter(ffmpeg: str) -> bool:
     """Does this ffmpeg expose the `ass`/`subtitles` filter? (2nd column is the filter name.)"""
     try:
-        out = subprocess.run([ffmpeg, "-hide_banner", "-filters"],
-                             capture_output=True, text=True, timeout=20)
+        out = subprocess.run(
+            [ffmpeg, "-hide_banner", "-filters"], capture_output=True, text=True, timeout=20
+        )
         for line in out.stdout.splitlines():
             parts = line.split()
             if len(parts) >= 2 and parts[1] in ("ass", "subtitles"):
@@ -62,7 +67,9 @@ def find_ffmpeg() -> str:
     for c in candidates:
         if c and Path(c).exists():
             return c
-    raise FileNotFoundError("ffmpeg not found. Install one with libass, e.g. `brew install ffmpeg-full`.")
+    raise FileNotFoundError(
+        "ffmpeg not found. Install one with libass, e.g. `brew install ffmpeg-full`."
+    )
 
 
 @lru_cache(maxsize=1)
@@ -94,8 +101,16 @@ def run(cmd: list[str], *, check: bool = True, quiet: bool = True) -> subprocess
 
 
 def ffprobe_json(path: str | Path) -> dict:
-    cmd = [find_ffprobe(), "-v", "error", "-print_format", "json",
-           "-show_format", "-show_streams", str(path)]
+    cmd = [
+        find_ffprobe(),
+        "-v",
+        "error",
+        "-print_format",
+        "json",
+        "-show_format",
+        "-show_streams",
+        str(path),
+    ]
     cp = run(cmd)
     return json.loads(cp.stdout)
 
@@ -115,17 +130,13 @@ def display_dimensions(vstream: dict) -> tuple[int, int]:
     # Rotation from side_data_list (display matrix).
     for sd in vstream.get("side_data_list", []) or []:
         if "rotation" in sd:
-            try:
+            with contextlib.suppress(Exception):
                 rot = int(float(sd["rotation"]))
-            except Exception:
-                pass
     # Legacy tags.rotate.
     tags = vstream.get("tags", {}) or {}
     if "rotate" in tags:
-        try:
+        with contextlib.suppress(Exception):
             rot = int(float(tags["rotate"]))
-        except Exception:
-            pass
     if abs(rot) % 180 == 90:
         return h, w
     return w, h
@@ -143,7 +154,18 @@ def fps_of(vstream: dict) -> float:
 
 def extract_frame(src: str | Path, t: float, out: str | Path) -> bool:
     """Extract a single frame at time t seconds (rotation applied automatically)."""
-    cmd = [find_ffmpeg(), "-y", "-ss", f"{t:.3f}", "-i", str(src),
-           "-frames:v", "1", "-update", "1", str(out)]
+    cmd = [
+        find_ffmpeg(),
+        "-y",
+        "-ss",
+        f"{t:.3f}",
+        "-i",
+        str(src),
+        "-frames:v",
+        "1",
+        "-update",
+        "1",
+        str(out),
+    ]
     cp = run(cmd, check=False)
     return cp.returncode == 0 and Path(out).exists()

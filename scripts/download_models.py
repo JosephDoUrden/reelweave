@@ -4,6 +4,7 @@
 - Ollama director LLM (and the optional Ollama vision fallback) via `ollama pull`.
 - MLX models (Whisper, Qwen3-VL) download automatically from Hugging Face on first run.
 """
+
 from __future__ import annotations
 
 import subprocess
@@ -32,7 +33,7 @@ def main() -> int:
         except Exception as e:
             print(f"  ! failed: {e} — is Ollama installed and running? (https://ollama.com)")
 
-    print(f"\nMLX models download on first use:")
+    print("\nMLX models download on first use:")
     print(f"  - ASR:    {cfg['transcribe']['model_repo']}")
     print(f"  - vision: {cfg['vision'].get('mlx_model', '')}")
     print("\nTip: run `python scripts/generate_sfx.py` to synthesise transition SFX.")

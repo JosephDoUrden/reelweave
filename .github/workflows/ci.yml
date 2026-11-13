@@ -9,15 +9,15 @@ jobs:
   lint:
     runs-on: macos-14   # Apple Silicon
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
       - name: Set up Python
         run: uv python install 3.12
       - name: Lint (ruff)
         run: |
-          uvx ruff check .
-          uvx ruff format --check .
+          uvx ruff@0.17.5 check .
+          uvx ruff@0.17.5 format --check .
       - name: Import check
         run: |
           uv venv

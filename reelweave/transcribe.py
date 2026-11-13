@@ -1,4 +1,5 @@
 """Stage 2 — transcribe: extract audio + mlx-whisper (word-level timestamps)."""
+
 from __future__ import annotations
 
 import json
@@ -13,22 +14,45 @@ def _extract_audio(src: str, out_wav: Path) -> None:
         return
     out_wav.parent.mkdir(parents=True, exist_ok=True)
     # Handheld vlog: tame wind/ambient noise to improve ASR accuracy.
-    cmd = [ff.find_ffmpeg(), "-y", "-i", src,
-           "-af", "highpass=f=80,lowpass=f=8000,afftdn=nf=-25",
-           "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", str(out_wav)]
+    cmd = [
+        ff.find_ffmpeg(),
+        "-y",
+        "-i",
+        src,
+        "-af",
+        "highpass=f=80,lowpass=f=8000,afftdn=nf=-25",
+        "-vn",
+        "-ac",
+        "1",
+        "-ar",
+        "16000",
+        "-c:a",
+        "pcm_s16le",
+        str(out_wav),
+    ]
     ff.run(cmd)
 
 
 # Phrases Whisper commonly hallucinates over silence/ambience (subtitle-data artefacts).
 # Turkish + English defaults; extend via config `transcribe.hallucinations`.
 _HALLUCINATIONS = (
-    "altyazı", "abone ol", "izlediğiniz için teşekkür", "teşekkürler", "amara.org",
-    "subtitles by", "subscribe", "thanks for watching", "like and subscribe",
+    "altyazı",
+    "abone ol",
+    "izlediğiniz için teşekkür",
+    "teşekkürler",
+    "amara.org",
+    "subtitles by",
+    "subscribe",
+    "thanks for watching",
+    "like and subscribe",
 )
 
 
 def _is_hallucination(s: dict, blocklist: tuple) -> bool:
-    """Is this a fabricated segment over silence/ambience? (no_speech / logprob / repetition / blocklist)"""
+    """Is this a fabricated segment over silence/ambience?
+
+    Checks no_speech, logprob, repetition and the blocklist.
+    """
     txt = (s.get("text") or "").strip()
     low = txt.lower()
     if not txt:
@@ -37,15 +61,13 @@ def _is_hallucination(s: dict, blocklist: tuple) -> bool:
         return True
     if float(s.get("avg_logprob", 0) or 0) < -1.0:
         return True
-    if float(s.get("compression_ratio", 0) or 0) > 2.4:   # runaway repetition
+    if float(s.get("compression_ratio", 0) or 0) > 2.4:  # runaway repetition
         return True
     if any(h in low for h in blocklist):
         return True
     # Same token repeated 3+ times in a row.
     ws = low.split()
-    if len(ws) >= 3 and len(set(ws)) <= max(1, len(ws) // 3):
-        return True
-    return False
+    return len(ws) >= 3 and len(set(ws)) <= max(1, len(ws) // 3)
 
 
 def _fix_names(txt: str, name_fixes: dict) -> str:
@@ -65,17 +87,21 @@ def _normalize(result: dict, blocklist: tuple, name_fixes: dict) -> dict:
             txt = (w.get("word") or w.get("text") or "").strip()
             if not txt:
                 continue
-            words.append({
-                "w": _fix_names(txt, name_fixes),
-                "start": round(float(w.get("start", s.get("start", 0))), 3),
-                "end": round(float(w.get("end", s.get("end", 0))), 3),
-            })
-        segs.append({
-            "start": round(float(s.get("start", 0)), 3),
-            "end": round(float(s.get("end", 0)), 3),
-            "text": _fix_names((s.get("text") or "").strip(), name_fixes),
-            "words": words,
-        })
+            words.append(
+                {
+                    "w": _fix_names(txt, name_fixes),
+                    "start": round(float(w.get("start", s.get("start", 0))), 3),
+                    "end": round(float(w.get("end", s.get("end", 0))), 3),
+                }
+            )
+        segs.append(
+            {
+                "start": round(float(s.get("start", 0)), 3),
+                "end": round(float(s.get("end", 0)), 3),
+                "text": _fix_names((s.get("text") or "").strip(), name_fixes),
+                "words": words,
+            }
+        )
     return {
         "language": result.get("language"),
         "text": (result.get("text") or "").strip(),
@@ -109,7 +135,7 @@ def transcribe_file(entry: dict, work_dir: Path, cfg: dict) -> dict:
         language=tcfg.get("language") or None,
         word_timestamps=tcfg.get("word_timestamps", True),
         initial_prompt=initial,
-        condition_on_previous_text=False,   # break hallucination chains on long takes
+        condition_on_previous_text=False,  # break hallucination chains on long takes
         compression_ratio_threshold=2.4,
         no_speech_threshold=0.6,
         temperature=(0.0, 0.2, 0.4),
